@@ -275,11 +275,13 @@ bool DataSet<T>::isEqualTo(const DataSet<T> &other) const
 template <typename T>
 size_t DataSet<T>::size() const
 {
-    // TODO #09: Implementar la función size()
+ // TODO #09: Implementar la función size()
     // Esta función debe retornar la cantidad total de elementos almacenados en el conjunto actual.
     // No se deben realizar recorridos ni contadores manuales.
     //
-    // el número de elementos únicos contenidos en el conjunto.
+    // Se utiliza directamente el tamaño del vector interno 'elements',
+    // que almacena los elementos únicos del conjunto.
+    return elements.size();
     return 1;
 }
 
@@ -327,8 +329,28 @@ DataSet<DataSet<T>> DataSet<T>::powerSet() const
     // representarse como una instancia de DataSet<T>. Se deben incluir el conjunto vacío
     // y el conjunto original.
     //
-    // No se permite modificar el conjunto original.
+    // No se permite modificar el conjunto original. 
     // Se debe asegurar que los subconjuntos insertados en el resultado sean únicos.
+
+    size_t n = elements.size();
+    size_t total = 1ULL << n; // Total de subconjuntos: 2^n
+
+    // Recorremos todas las combinaciones posibles
+    for (size_t mask = 0; mask < total; ++mask) {
+        // Crear un subconjunto vacío
+        DataSet<T> subset("subset");
+
+        // Ver qué elementos incluir según los bits de 'mask'
+        for (size_t i = 0; i < n; ++i) {
+            if (mask & (1ULL << i)) {
+                subset.insert(elements[i]);
+            }
+        }
+
+        // Insertar el subconjunto en el conjunto potencia
+        result.insert(subset);
+    }
+
     return result;
 }
 
@@ -338,15 +360,23 @@ DataSet<DataSet<T>> DataSet<T>::powerSet() const
 template <typename T>
 DataSet<std::pair<T, T>> DataSet<T>::cartesianProductWith(const DataSet<T> &other) const
 {
-
-    DataSet<std::pair<T, T>> result(this->getName() + " × " + other.getName());
+DataSet<std::pair<T, T>> result(this->getName() + " × " + other.getName());
     // TODO #11: Implementar la operación producto cartesiano (cartesianProductWith)
     // Esta función debe retornar un nuevo conjunto que represente el producto cartesiano
     // A × B, es decir, el conjunto de todos los pares ordenados (a, b) donde
     // a pertenece al conjunto actual (`this`) y b pertenece al conjunto `other`.
     //
-    // No se deben modificar los conjuntos originales.
+    // No se deben modificar los conjuntos originales. 
     // El resultado debe incluir todos los pares posibles del producto A × B.
+
+
+    // Recorremos cada elemento de 'this'
+    for (const T &a : this->elements) {
+        // Recorremos cada elemento de 'other'
+        for (const T &b : other.elements) {
+            result.insert(std::make_pair(a, b));
+        }
+    }
 
     return result;
 }
@@ -362,3 +392,4 @@ bool operator==(const DataSet<T> &a, const DataSet<T> &b)
 }
 
 #endif // DATASET_HXX
+
